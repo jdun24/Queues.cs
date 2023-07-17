@@ -1,0 +1,116 @@
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.InputSystem;
+
+public class HeapNode<TKey, TValue> where TKey : IComparable<TKey> {
+    public TKey key { get; set; }
+    public TValue value { get; set; }
+
+    public HeapNode(TKey key, TValue value) {
+        this.key = key;
+        this.value = value;
+    }
+
+    public int CompareTo(HeapNode<TKey, TValue> other)
+    {
+        return key.CompareTo(other.key);
+    }
+}
+
+public class MinHeap<TKey, TValue> where TKey : IComparable<TKey>
+{ 
+    private List<HeapNode<TKey, TValue>> heap;
+
+    public MinHeap()
+    {
+        heap = new List<HeapNode<TKey, TValue>>();
+    }
+
+    public int Count => heap.Count;
+
+    public void Insert(TKey key, TValue value)
+    {
+        var node = new HeapNode<TKey, TValue>(key, value);
+        heap.Add(node);
+        HeapifyUp(heap.Count - 1);
+    }
+
+    public HeapNode<TKey, TValue> ExtractMin()
+    {
+        if (heap.Count == 0)
+            throw new InvalidOperationException("The heap is empty.");
+
+        HeapNode<TKey, TValue> minNode = heap[0];
+        int lastIndex = heap.Count - 1;
+        heap[0] = heap[lastIndex];
+        heap.RemoveAt(lastIndex);
+        HeapifyDown(0);
+        return minNode;
+    }
+
+    public HeapNode<TKey, TValue> GetMin()
+    {
+        if (heap.Count == 0)
+            throw new InvalidOperationException("The heap is empty.");
+
+        return heap[0];
+    }
+
+    public bool IsEmpty()
+    {
+        return heap.Count == 0;
+    }
+
+    private void HeapifyUp(int index)
+    {
+        while (index > 0)
+        {
+            int parentIndex = (index - 1) / 2;
+            if (heap[index].CompareTo(heap[parentIndex]) >= 0)
+                break;
+
+            Swap(index, parentIndex);
+            index = parentIndex;
+        }
+    }
+
+    private void HeapifyDown(int index)
+    {
+        int leftChildIndex = 2 * index + 1;
+        int rightChildIndex = 2 * index + 2;
+        int smallestIndex = index;
+
+        if (leftChildIndex < heap.Count && heap[leftChildIndex].CompareTo(heap[smallestIndex]) < 0)
+            smallestIndex = leftChildIndex;
+
+        if (rightChildIndex < heap.Count && heap[rightChildIndex].CompareTo(heap[smallestIndex]) < 0)
+            smallestIndex = rightChildIndex;
+
+        if (smallestIndex != index)
+        {
+            Swap(index, smallestIndex);
+            HeapifyDown(smallestIndex);
+        }
+    }
+
+    private void Swap(int i, int j)
+    {
+        (TKey key, TValue value) temp = (heap[i].key, heap[i].value);
+        heap[i].key = heap[j].key;
+        heap[i].value = heap[j].value;
+        heap[j].key = temp.key;
+        heap[j].value = temp.value;
+    }
+
+    public TValue Peek()
+    {
+        return heap[0].value;
+    }
+
+    public int Size()
+    {
+        return heap.Count;
+    }
+}
